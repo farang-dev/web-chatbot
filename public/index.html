@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Chatbot</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Include your CSS file -->
+</head>
+<body>
+    <!-- Your website content -->
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" class="closed">
+        <div id="chat-header">
+            <div id="chat-title">Chatbot</div>
+            <button id="chat-toggle">Open</button>
+        </div>
+        <div id="chat-messages"></div> <!-- This is where messages should be appended -->
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const chatWidget = document.getElementById('chat-widget'); // Updated to match your HTML
+          const chat = document.getElementById('chat-messages'); // Update the ID here
+
+          const userInput = document.getElementById('user-input');
+          const sendButton = document.getElementById('send-button');
+
+          // Function to display a message in the chat
+          function displayMessage(text, sender) {
+              const messageDiv = document.createElement('div');
+              messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+              messageDiv.textContent = text;
+              chat.appendChild(messageDiv);
+          }
+
+          // Function to send a user message to the server and display the response
+          async function sendMessage() {
+              const userMessage = userInput.value.trim();
+              if (!userMessage) return;
+
+              // Display the user message in the chat
+              displayMessage(userMessage, 'user');
+
+              // Send the user message to the server
+              const response = await fetch('/chat', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ message: userMessage })
+              });
+
+              if (response.ok) {
+                  const data = await response.json();
+                  const botMessage = data.message;
+
+                  // Display the bot's response in the chat
+                  displayMessage(botMessage, 'bot');
+              }
+
+              // Clear the user input field
+              userInput.value = '';
+          }
+
+          // Send a message when the user clicks the send button
+          sendButton.addEventListener('click', sendMessage);
+
+          // Send a message when the user presses Enter
+          userInput.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter') {
+                  sendMessage();
+              }
+          });
+
+          const chatToggle = document.getElementById('chat-toggle');
+
+          // Function to toggle the chat widget
+          function toggleChatWidget() {
+              chatWidget.classList.toggle('open');
+              chatWidget.classList.toggle('closed');
+              chatToggle.textContent = chatWidget.classList.contains('open') ? 'Close' : 'Open';
+          }
+
+          // Toggle the chat widget when the "Open" button is clicked
+          chatToggle.addEventListener('click', toggleChatWidget);
+      });
+  </script>
+</body>
+</html>
